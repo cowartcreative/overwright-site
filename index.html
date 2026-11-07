@@ -131,6 +131,20 @@ footer{margin-top:90px;border-top:1px solid var(--line);padding:36px 0 46px;colo
 footer a{color:var(--muted);text-decoration:none}
 footer a:hover{color:var(--ink)}
 .ver{font-family:var(--mono);font-size:12.5px;color:var(--muted);opacity:.8}
+
+/* launch-list signup */
+.signup{margin:34px auto 0;max-width:560px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px;text-align:center}
+.signup h3{font-size:19px;font-weight:600;margin-bottom:4px}
+.signup p.s{color:var(--muted);font-size:14px;margin-bottom:14px}
+.sg-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.sg-row input{flex:1;min-width:220px;background:var(--desk);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:12px 14px;font:inherit;font-size:15px}
+.sg-row input::placeholder{color:var(--muted)}
+.sg-row button{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:12px 20px;font:inherit;font-weight:600;font-size:15px;cursor:pointer}
+.sg-row button:hover{background:#d2554c}
+.sg-row button:disabled{opacity:.6;cursor:default}
+.sg-msg{margin-top:10px;font-size:13.5px;color:var(--muted);min-height:1em}
+.sg-msg.ok{color:var(--ink)}
+.sg-msg.bad{color:var(--accent-ink)}
 </style>
 </head>
 <body>
@@ -158,6 +172,15 @@ footer a:hover{color:var(--ink)}
     <a class="btn ghost" href="https://trentcowart.com/download/902/">Download for Windows</a>
   </div>
   <div class="finenote">Free while in preview · no account, no sign-up · <a href="#download">first-launch steps below</a></div>
+  <form class="signup" id="signup" novalidate>
+    <h3>Want launch news?</h3>
+    <p class="s">One email when Overwright 1.0 ships — with a launch discount for preview users. No spam, ever.</p>
+    <div class="sg-row">
+      <input type="email" id="sgEmail" name="your-email" placeholder="you@email.com" autocomplete="email" required aria-label="Email address">
+      <button type="submit" id="sgBtn">Notify me at launch</button>
+    </div>
+    <div class="sg-msg" id="sgMsg" role="status" aria-live="polite"></div>
+  </form>
 </div>
 
 <div class="shot">
@@ -276,5 +299,28 @@ footer a:hover{color:var(--ink)}
   </div>
 </footer>
 
+<script>
+(function(){
+  var f=document.getElementById('signup'), e=document.getElementById('sgEmail'), b=document.getElementById('sgBtn'), m=document.getElementById('sgMsg');
+  f.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var v=(e.value||'').trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ m.className='sg-msg bad'; m.textContent='That email address looks incomplete.'; e.focus(); return; }
+    b.disabled=true; m.className='sg-msg'; m.textContent='Adding you\u2026';
+    var fd=new FormData();
+    fd.append('_wpcf7','916'); fd.append('_wpcf7_version','6.0'); fd.append('_wpcf7_locale','en_US');
+    fd.append('_wpcf7_unit_tag','wpcf7-f916-o1'); fd.append('_wpcf7_container_post','0');
+    fd.append('your-email', v);
+    fetch('https://trentcowart.com/wp-json/contact-form-7/v1/contact-forms/916/feedback',{method:'POST',body:fd})
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if(j && j.status==='mail_sent'){ m.className='sg-msg ok'; m.textContent="You\u2019re on the list. One email at launch \u2014 that\u2019s it."; f.reset(); }
+        else { m.className='sg-msg bad'; m.textContent=(j && j.message) || 'Something went wrong \u2014 please try again.'; }
+      })
+      .catch(function(){ m.className='sg-msg bad'; m.textContent='Couldn\u2019t reach the server \u2014 please try again in a moment.'; })
+      .then(function(){ b.disabled=false; });
+  });
+})();
+</script>
 </body>
 </html>
